@@ -32,11 +32,11 @@ jobs:
         env:
           GCORE_KEY: ${{ secrets.GCORE_API_KEY }}
         run: |
-          python3 -c "import os,json; json.dump({'gcore':{'TYPE':'GCORE','api_key':os.environ['GCORE_KEY']}}, open('./scripts/creds.json','w'))"
+          python3 -c "import os,json; json.dump({'gcore':{'TYPE':'GCORE','api-key':os.environ['GCORE_KEY']}}, open('./scripts/creds.json','w'))"
 
       - name: Verify credentials file
         run: |
-          python3 -c "import json; d=json.load(open('./scripts/creds.json')); assert d['gcore']['api_key'], 'api_key is empty'; print('creds.json OK')"
+          python3 -c "import json; d=json.load(open('./scripts/creds.json')); assert d['gcore']['api-key'], 'api-key is empty'; print('creds.json OK')"
 
       - name: Run verification from DNSControl
         working-directory: ./scripts

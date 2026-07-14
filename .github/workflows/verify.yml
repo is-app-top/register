@@ -33,7 +33,7 @@ jobs:
         env:
           GCORE_KEY: ${{ secrets.GCORE_API_KEY }}
         run: |
-          python3 -c "import os,json; json.dump({'gcore':{'TYPE':'GCORE','api_key':os.environ['GCORE_KEY']}}, open('./scripts/creds.json','w'))"
+          python3 -c "import os,json; json.dump({'gcore':{'TYPE':'GCORE','api-key':os.environ['GCORE_KEY']}}, open('./scripts/creds.json','w'))"
 
       - name: Run verification from DNSControl
         working-directory: ./scripts
