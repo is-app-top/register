@@ -1,0 +1,11 @@
+{
+  "subdomain": "bitbank",
+  "domain": "is-app.top",
+  "email_or_discord": "admin@is-app.top",
+  "github_username": "williebenner",
+  "description": "A brief description of the purpose of the subdomain",
+
+  "records": {
+    "NS":    ["ns1.desec.io", "ns2.desec.io"]
+  }
+}

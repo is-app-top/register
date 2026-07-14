@@ -1,0 +1,12 @@
+{
+  "name": "is-app-top-register",
+  "private": true,
+  "type": "commonjs",
+  "version": "0.0.0",
+  "description": "Registration repo tooling",
+  "license": "MIT",
+  "dependencies": {
+    "json5": "^2.2.3"
+  }
+}
+

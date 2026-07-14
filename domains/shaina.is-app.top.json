@@ -1,0 +1,11 @@
+{
+  "subdomain": "shaina",
+  "domain": "is-app.top",
+  "email_or_discord": "thedreamingparadox",
+  "github_username": "HexBix",
+  "description": "Educational OS project backend for system logging and updates",
+
+  "records": {
+    "A": ["10.219.174.227"]
+  }
+}

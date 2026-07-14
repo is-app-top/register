@@ -1,0 +1,11 @@
+{
+  "subdomain": "tubb3ll",
+  "domain": "is-app.top",
+  "email_or_discord": "phungdangtuantu@gmail.com",
+  "github_username": "tubeo5866",
+  "description": "TESTER TESTING!!!",
+
+  "records": {
+    "A":     ["1.1.1.1"]
+  }
+}
