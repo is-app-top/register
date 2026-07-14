@@ -30,8 +30,10 @@ jobs:
           sudo mv dnscontrol /usr/local/bin/
 
       - name: Create credentials file
+        env:
+          GCORE_KEY: ${{ secrets.GCORE_API_KEY }}
         run: |
-          echo '{"gcore":{"TYPE":"GCORE","api_key":"${{ secrets.GCORE_API_KEY }}"}}' > ./scripts/creds.json
+          python3 -c "import os,json; json.dump({'gcore':{'TYPE':'GCORE','api_key':os.environ['GCORE_KEY']}}, open('./scripts/creds.json','w'))"
 
       - name: Run verification from DNSControl
         working-directory: ./scripts
