@@ -1,0 +1,12 @@
+{
+  "subdomain": "baetiy",
+  "domain": "is-app.top",
+  "github_username": "byt-al3lm",
+  "description": "موسوعتك الموثوقة للإجابة على الأسئلة التعليمية، الطبية والتقنية",
+
+   "records": {
+    "A":     ["185.199.108.153", "185.199.109.153"],
+    "AAAA":  ["2606:50c0:8000::153", "2606:50c0:8001::153"],
+    "CNAME": ["byt-al3lm.github.io"],
+  }
+}
