@@ -5,6 +5,6 @@
   "github_username": "augustsav",
   "description": "Supetest is the domain name I use for testing my projects.",
   "records": {
-    "A": ["76.76.21.21"]
+    "CNAME": ["d5468ed6c401d560.vercel-dns-017.com"]
   }
 }
