@@ -1,0 +1,10 @@
+{
+  "subdomain": "cao-aosong-tarot",
+  "domain": "is-app.top",
+  "email_or_discord": "206281757+Jason555666777888@users.noreply.github.com",
+  "github_username": "Jason555666777888",
+  "description": "Mobile-first Tarot Cloud entertainment and reflection web application",
+  "records": {
+    "A": ["76.76.21.21"]
+  }
+}
