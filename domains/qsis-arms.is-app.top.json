@@ -1,0 +1,11 @@
+{
+  "subdomain": "qsis-arms",
+  "domain": "is-app.top",
+  "email_or_discord": "s.atiqurrahman2003@gmail.com",
+  "github_username": "sayedatiqurrahman",
+  "description": "Official website for the QSIS Academic Resource Management System.",
+
+  "records": {
+    "CNAME": ["sayedatiqurrahman.github.io"]
+  }
+}
