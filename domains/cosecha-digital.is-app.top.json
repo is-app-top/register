@@ -5,6 +5,12 @@
   "github_username": "davilaherreraerasmo-ux",
   "description": "Educational Cosecha Digital web application for agricultural finance and impact investing.",
   "records": {
-    "CNAME": ["custom-domains.chatgpt.site"]
+    "CNAME": [
+      "custom-domains.chatgpt.site"
+    ],
+    "TXT": [
+      "openai-site-verification=gCM2WWkkVtIGGX7Xng6Q2kdvDgTcjYHWiczC7Wt8ONc",
+      "2f20d3d6-5ab7-4e54-bab4-75aa1077b5e8"
+    ]
   }
 }
