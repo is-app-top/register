@@ -1,0 +1,10 @@
+{
+  "subdomain": "edirnehavadurumu",
+  "domain": "is-app.top",
+  "email_or_discord": "hkndmrl22-bit",
+  "github_username": "hkndmrl22-bit",
+  "description": "Edirne Hava Durumu yerel hava tahmin uygulamasi.",
+  "records": {
+    "CNAME": ["hkndmrl22-bit.github.io"]
+  }
+}
