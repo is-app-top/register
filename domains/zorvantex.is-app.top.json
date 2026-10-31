@@ -1,0 +1,12 @@
+{
+  "subdomain": "zorvantex",
+  "domain": "is-app.top",
+  "email_or_discord": "281019566+zorvantex@users.noreply.github.com",
+  "github_username": "zorvantex",
+  "description": "Official Zorvantex project landing page.",
+  "records": {
+    "CNAME": [
+      "zorvantex.github.io"
+    ]
+  }
+}
