@@ -1,0 +1,11 @@
+{
+  "subdomain": "beam",
+  "domain": "is-app.top",
+  "email_or_discord": "solomonsasson031@gmail.com",
+  "github_username": "theprojectmaker",
+  "description": "Personal Cloudflare-hosted messaging app (Beam)",
+
+  "records": {
+    "CNAME": ["beam-gateway.pages.dev"]
+  }
+}
