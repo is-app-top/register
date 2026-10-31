@@ -1,0 +1,10 @@
+{
+  "subdomain": "pdfmaster",
+  "domain": "is-app.top",
+  "email_or_discord": "archseuyang@163.com",
+  "github_username": "dashizhihuan2018-source",
+  "description": "PDF Master is a free non-commercial macOS PDF reader and annotation app. This subdomain will serve its public product website, tutorials, copyright notices and GitHub release download links. Current website: https://dashizhihuan2018-source.github.io/PDFMaster/",
+  "records": {
+    "CNAME": ["dashizhihuan2018-source.github.io"]
+  }
+}
