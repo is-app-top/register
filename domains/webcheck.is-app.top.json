@@ -1,0 +1,10 @@
+{
+  "subdomain": "webcheck",
+  "domain": "is-app.top",
+  "email_or_discord": "@mosawerghousi on GitHub",
+  "github_username": "mosawerghousi",
+  "description": "WebCheck is a website testing platform that scans public sites and reports accessibility, responsive, reliability, and SEO issues.",
+  "records": {
+    "TXT": ["webcheck-reserved-for-mosawerghousi-pending-public-deployment"]
+  }
+}
