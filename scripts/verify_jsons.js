@@ -1,9 +1,7 @@
 const fs = require('fs');
 const net = require('net');
 const path = require('path');
-const Ajv = require('ajv');
 
-const schema = require('./schema.json');
 const RESERVED_NAMES = new Set(
     require('./reserved_names.json').map((name) => name.toLowerCase())
 );
@@ -11,17 +9,31 @@ const RESERVED_NAMES = new Set(
 const DOMAIN_NAME = 'is-app.top';
 const MAX_DOMAINS_PER_USER = 10;
 const SPECIAL_SUBDOMAINS = new Set(['@', '_gh-is-app-top-o']);
+const ALLOWED_FIELDS = new Set([
+    'subdomain',
+    'domain',
+    'email_or_discord',
+    'public_email',
+    'github_username',
+    'description',
+    'ttl',
+    'records',
+]);
+const ALLOWED_RECORD_TYPES = new Set(['A', 'AAAA', 'CNAME', 'NS', 'MX', 'TXT']);
+const SUBDOMAIN_PATTERN = /^(@|_gh-is-app-top-o|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)$/;
+const GITHUB_USERNAME_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const ajv = new Ajv({ allErrors: true, strict: false });
-const validateSchema = ajv.compile(schema);
+function isPlainObject(value) {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 function isReservedPath(filePath) {
     return filePath.includes(path.join('domains', 'reserved'));
 }
 
 function isValidEmail(email) {
-    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return pattern.test(email);
+    return typeof email === 'string' && EMAIL_PATTERN.test(email);
 }
 
 function verifySubdomainMatch(subdomain, filePath) {
@@ -71,19 +83,153 @@ function isUnderRegisteredDomain(domain) {
     return normalized === DOMAIN_NAME || normalized.endsWith(`.${DOMAIN_NAME}`);
 }
 
-function formatAjvError(error) {
-    const field = error.instancePath
-        ? error.instancePath.replace(/^\//, '').replace(/\//g, '.')
-        : 'document';
-    return `${field} ${error.message}`;
+function validateMxEntry(entry, index) {
+    const errors = [];
+
+    if (typeof entry === 'string') {
+        if (!entry) errors.push(`:ERROR: MX[${index}] must be a non-empty string.`);
+        return errors;
+    }
+
+    if (!isPlainObject(entry)) {
+        errors.push(`:ERROR: MX[${index}] must be a string or an object with 'priority' and 'target'.`);
+        return errors;
+    }
+
+    for (const key of Object.keys(entry)) {
+        if (key !== 'priority' && key !== 'target') {
+            errors.push(`:ERROR: MX[${index}] has an unknown field '${key}'.`);
+        }
+    }
+
+    if (!Number.isInteger(entry.priority) || entry.priority < 0 || entry.priority > 65535) {
+        errors.push(`:ERROR: MX[${index}].priority must be an integer between 0 and 65535.`);
+    }
+    if (typeof entry.target !== 'string' || !entry.target) {
+        errors.push(`:ERROR: MX[${index}].target must be a non-empty string.`);
+    }
+
+    return errors;
+}
+
+function validateShape(jsonData) {
+    const errors = [];
+
+    if (!isPlainObject(jsonData)) {
+        errors.push(':ERROR: document must be a JSON object.');
+        return errors;
+    }
+
+    for (const field of Object.keys(jsonData)) {
+        if (!ALLOWED_FIELDS.has(field)) {
+            errors.push(`:ERROR: Unknown field '${field}'.`);
+        }
+    }
+
+    for (const field of ['subdomain', 'domain', 'github_username', 'description', 'records']) {
+        if (!(field in jsonData) || jsonData[field] === undefined) {
+            errors.push(`:ERROR: Missing required field '${field}'.`);
+        }
+    }
+
+    if (jsonData.subdomain !== undefined) {
+        if (typeof jsonData.subdomain !== 'string') {
+            errors.push(':ERROR: subdomain must be a string.');
+        } else if (jsonData.subdomain.length < 1 || jsonData.subdomain.length > 63) {
+            errors.push(':ERROR: subdomain must be between 1 and 63 characters.');
+        } else if (!SUBDOMAIN_PATTERN.test(jsonData.subdomain)) {
+            errors.push(':ERROR: subdomain contains invalid characters.');
+        }
+    }
+
+    if (jsonData.domain !== undefined && jsonData.domain !== DOMAIN_NAME) {
+        errors.push(':ERROR: Domain is invalid.');
+    }
+
+    if (jsonData.email_or_discord !== undefined) {
+        if (typeof jsonData.email_or_discord !== 'string' || !jsonData.email_or_discord) {
+            errors.push(':ERROR: email_or_discord must be a non-empty string.');
+        }
+    }
+
+    if (jsonData.public_email !== undefined) {
+        if (!isValidEmail(jsonData.public_email)) {
+            errors.push(':ERROR: Invalid email in the JSON.');
+        }
+    }
+
+    if (!jsonData.public_email && !jsonData.email_or_discord) {
+        errors.push(':ERROR: Please provide your contact info (email_or_discord or public_email) in the JSON.');
+    }
+
+    if (jsonData.github_username !== undefined) {
+        if (typeof jsonData.github_username !== 'string' || !jsonData.github_username) {
+            errors.push(':ERROR: Please provide your GitHub username in the JSON.');
+        } else if (
+            jsonData.github_username.length > 39 ||
+            !GITHUB_USERNAME_PATTERN.test(jsonData.github_username)
+        ) {
+            errors.push(':ERROR: github_username is not a valid GitHub username.');
+        }
+    }
+
+    if (jsonData.description !== undefined) {
+        if (typeof jsonData.description !== 'string' || !jsonData.description) {
+            errors.push(':ERROR: Description is empty.');
+        } else if (jsonData.description.length < 15) {
+            errors.push(':ERROR: Description is too short. Please provide a description of your website.');
+        } else if (jsonData.description.length > 500) {
+            errors.push(':ERROR: Description must be 500 characters or fewer.');
+        }
+    }
+
+    if (jsonData.ttl !== undefined) {
+        if (!Number.isInteger(jsonData.ttl) || jsonData.ttl < 60 || jsonData.ttl > 86400) {
+            errors.push(':ERROR: ttl must be an integer between 60 and 86400.');
+        }
+    }
+
+    if (jsonData.records !== undefined) {
+        if (!isPlainObject(jsonData.records)) {
+            errors.push(':ERROR: Records must be an object.');
+        } else if (Object.keys(jsonData.records).length === 0) {
+            errors.push(':ERROR: At least one DNS record is required.');
+        } else {
+            for (const [type, values] of Object.entries(jsonData.records)) {
+                if (!ALLOWED_RECORD_TYPES.has(type)) {
+                    errors.push(`:ERROR: Invalid record type: ${type}`);
+                    continue;
+                }
+
+                if (!Array.isArray(values)) {
+                    errors.push(`:ERROR: ${type} record must be an array. Check your JSON syntax.`);
+                    continue;
+                }
+
+                if (values.length === 0) {
+                    errors.push(`:ERROR: ${type} record must contain at least one value.`);
+                    continue;
+                }
+
+                values.forEach((value, index) => {
+                    if (type === 'MX') {
+                        errors.push(...validateMxEntry(value, index));
+                    } else if (typeof value !== 'string' || !value) {
+                        errors.push(`:ERROR: ${type}[${index}] must be a non-empty string.`);
+                    }
+                });
+            }
+        }
+    }
+
+    return errors;
 }
 
 function validateRecords(records, subdomain, isReserved) {
     const errors = [];
-
     const types = Object.keys(records);
+
     if (types.length === 0) {
-        errors.push(':ERROR: At least one DNS record is required.');
         return errors;
     }
 
@@ -153,9 +299,7 @@ function validateRecords(records, subdomain, isReserved) {
                 }
 
                 case 'TXT':
-                    if (typeof value !== 'string') {
-                        errors.push(`:ERROR: Invalid TXT record: ${value}`);
-                    } else if (value.length > 255) {
+                    if (typeof value === 'string' && value.length > 255) {
                         errors.push(`:ERROR: TXT record exceeds the 255 character limit: ${value.slice(0, 40)}...`);
                     }
                     break;
@@ -167,17 +311,11 @@ function validateRecords(records, subdomain, isReserved) {
 }
 
 function validateJson(jsonData, filePath) {
-    const errors = [];
+    const errors = validateShape(jsonData);
     const fileName = path.basename(filePath);
     const reserved = isReservedPath(filePath);
 
-    if (!validateSchema(jsonData)) {
-        for (const error of validateSchema.errors || []) {
-            errors.push(`:ERROR: ${formatAjvError(error)}`);
-        }
-    }
-
-    if (typeof jsonData !== 'object' || jsonData === null || Array.isArray(jsonData)) {
+    if (!isPlainObject(jsonData)) {
         return errors;
     }
 
@@ -207,18 +345,7 @@ function validateJson(jsonData, filePath) {
         }
     }
 
-    const publicEmail = typeof jsonData.public_email === 'string' ? jsonData.public_email : '';
-    const contactInfo = typeof jsonData.email_or_discord === 'string' ? jsonData.email_or_discord : '';
-
-    if (publicEmail) {
-        if (!isValidEmail(publicEmail)) {
-            errors.push(':ERROR: Invalid email in the JSON.');
-        }
-    } else if (!contactInfo) {
-        errors.push(':ERROR: Please provide your contact info in the JSON.');
-    }
-
-    if (jsonData.records && typeof jsonData.records === 'object' && !Array.isArray(jsonData.records)) {
+    if (isPlainObject(jsonData.records)) {
         errors.push(...validateRecords(jsonData.records, subdomain, reserved));
     }
 
@@ -263,7 +390,7 @@ function validateAll(domainsPath) {
             errors.push(`File: ${filePath} - ${error}`);
         }
 
-        if (jsonData && typeof jsonData === 'object') {
+        if (isPlainObject(jsonData)) {
             const subdomain = String(jsonData.subdomain || '').toLowerCase();
             if (subdomain) {
                 if (!subdomainOwners.has(subdomain)) subdomainOwners.set(subdomain, []);

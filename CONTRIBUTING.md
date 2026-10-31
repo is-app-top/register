@@ -11,7 +11,6 @@ Thanks for helping keep `*.is-app.top` tidy.
 5. Run the local checks:
 
    ```bash
-   npm install
    npm run check
    ```
 

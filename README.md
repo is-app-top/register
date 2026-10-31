@@ -96,8 +96,7 @@ If you need a reserved name for a legitimate project, open an issue first.
 Run the same checks used by CI before opening a pull request:
 
 ```bash
-npm install
-npm run check   # lint + validate + tests
+npm run check   # lint + validate + tests (no dependencies to install)
 ```
 
 You can also run the validator on its own with `npm run validate`.
