@@ -33,6 +33,11 @@ test('valid A record passes', () => {
     assert.deepEqual(validateJson(base(), domainFile('example')), []);
 });
 
+test('CNAME without a TXT record passes', () => {
+    const json = base({ records: { CNAME: ['example.com'] } });
+    assert.deepEqual(validateJson(json, domainFile('example')), []);
+});
+
 test('compressed IPv6 AAAA record passes', () => {
     const json = base({ records: { AAAA: ['2001:db8::1'] } });
     assert.deepEqual(validateJson(json, domainFile('example')), []);

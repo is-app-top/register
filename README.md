@@ -28,7 +28,7 @@
 
 - We support **A, AAAA, CNAME, NS, MX, and TXT** record types.
 - DNS is provided by **Gcore**. Unlike Cloudflare, Gcore DNS does **not** include proxy/CDN functionality — all records are DNS-only.
-- A `CNAME` must be the only record for that subdomain and may not point at `is-app.top` or at itself.
+- A `CNAME` must be the only record for that subdomain and may not point at `is-app.top` or at itself. We do **not** require a `TXT` verification record.
 - `NS` records may not point inside `is-app.top` (no self-delegation).
 - `MX` targets may not point inside `is-app.top`.
 - `TXT` values are limited to 255 characters per entry.
@@ -47,7 +47,7 @@ Use the following structure for your JSON file.
 > [!IMPORTANT]
 > Ensure your JSON file is valid with NO trailing commas. You can easily check the format validity [here](https://jsonlint.com).
 
-Template:
+A record example (`TXT` is optional):
 ```json
 {
   "subdomain": "yoursubdomain",
@@ -58,17 +58,30 @@ Template:
   "ttl": 3600,
 
   "records": {
-    "A":     ["1.0.0.1", "1.0.0.2"],
-    "AAAA":  ["2000:db8::1", "2000:db8::2"],
-    "CNAME": ["example.com"],
-    "NS":    ["ns1.example.com", "ns2.example.com"],
-    "MX":    ["mail1.example.com", { "priority": 10, "target": "mail2.example.com" }],
-    "TXT":   ["v=spf1 include:_spf.example.com ~all"]
+    "A":   ["1.0.0.1", "1.0.0.2"],
+    "TXT": ["v=spf1 include:_spf.example.com ~all"]
   }
 }
 ```
 
-The `CNAME` example above cannot be combined with any other record type. Only keep the records you need and delete the rest.
+CNAME example (no `TXT` verification record required):
+```json
+{
+  "subdomain": "yoursubdomain",
+  "domain": "is-app.top",
+  "email_or_discord": "user@example.com or user",
+  "github_username": "user",
+  "description": "A brief description of the purpose of the subdomain",
+
+  "records": {
+    "CNAME": ["example.com"]
+  }
+}
+```
+
+> [!NOTE]
+> We do not require a `TXT` record for verification. Add `TXT` only if your service actually needs it.
+> A `CNAME` cannot be combined with any other record type (including `TXT`) at the same name. Only keep the records you need and delete the rest.
 
 
 ## Fields Explanation
