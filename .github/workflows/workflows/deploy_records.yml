@@ -1,0 +1,88 @@
+name: Verify and Deploy DNS Changes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'domains/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy_records.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dns-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.4.1'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Verify content of the JSONs
+        run: node ./scripts/verify_jsons.js
+
+      - name: Install DNSControl
+        run: |
+          curl -sSL https://github.com/StackExchange/dnscontrol/releases/download/v4.12.5/dnscontrol_4.12.5_linux_amd64.tar.gz -o dnscontrol.tar.gz
+          tar -xzf dnscontrol.tar.gz
+          sudo mv dnscontrol /usr/local/bin/
+
+      - name: Create credentials file
+        env:
+          GCORE_KEY: ${{ secrets.GCORE_API_KEY }}
+        run: |
+          python3 -c "import os,json; json.dump({'gcore':{'TYPE':'GCORE','api-key':os.environ['GCORE_KEY']}}, open('./scripts/creds.json','w'))"
+
+      - name: Verify credentials file
+        run: |
+          python3 -c "import json; d=json.load(open('./scripts/creds.json')); assert d['gcore']['api-key'], 'api-key is empty'; print('creds.json OK')"
+
+      - name: Run verification from DNSControl
+        working-directory: ./scripts
+        run: |
+          dnscontrol check
+
+      - name: Preview DNS changes
+        working-directory: ./scripts
+        run: |
+          dnscontrol preview
+
+      - name: Push records to DNSControl
+        working-directory: ./scripts
+        run: |
+          dnscontrol push
+
+      - name: Update lists.txt
+        run: node ./scripts/update_lists_main.js
+
+      - name: Commit lists.txt
+        run: |
+          if git diff --quiet -- lists.txt; then
+            echo "lists.txt is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lists.txt
+          git commit -m "chore: update lists.txt"
+          git push

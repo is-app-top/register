@@ -1,0 +1,70 @@
+name: Verify DNS Changes
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'domains/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: verify-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.4.1'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Verify content of the JSONs
+        run: node ./scripts/verify_jsons.js
+
+      - name: Install DNSControl
+        run: |
+          curl -sSL https://github.com/StackExchange/dnscontrol/releases/download/v4.12.5/dnscontrol_4.12.5_linux_amd64.tar.gz -o dnscontrol.tar.gz
+          tar -xzf dnscontrol.tar.gz
+          sudo mv dnscontrol /usr/local/bin/
+
+      - name: Create credentials file
+        env:
+          GCORE_KEY: ${{ secrets.GCORE_API_KEY }}
+        run: |
+          python3 -c "import os,json; json.dump({'gcore':{'TYPE':'GCORE','api-key':os.environ['GCORE_KEY']}}, open('./scripts/creds.json','w'))"
+
+      - name: Run verification from DNSControl
+        working-directory: ./scripts
+        run: |
+          dnscontrol check
+
+      - name: Comment validation errors on PR
+        if: failure() && github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f validation_errors.txt ]; then
+            gh pr comment "${{ github.event.pull_request.number }}" --body-file validation_errors.txt
+          else
+            gh pr comment "${{ github.event.pull_request.number }}" --body "DNSControl verification failed. Check the workflow logs for details."
+          fi

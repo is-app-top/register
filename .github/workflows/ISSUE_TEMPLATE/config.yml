@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Register a subdomain
+    url: https://github.com/is-app-top/register#how-to-get-your-subdomain
+    about: Follow the README to open a pull request instead of an issue.
+  - name: Terms of Service
+    url: https://github.com/is-app-top/register/blob/main/TERMS.md
+    about: Review the Terms of Service before registering.
