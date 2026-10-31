@@ -1,32 +1,12 @@
-const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-function getChangedDomainFilesFromPush(beforeSha, afterSha) {
-  const diffCmd = `git diff --name-status ${beforeSha} ${afterSha}`;
-  const out = execSync(diffCmd).toString().trim();
-  if (!out) return [];
-  const lines = out.split('\n');
-  const files = [];
-  for (const line of lines) {
-    const [status, filePath] = line.split('\t');
-    if (!filePath) continue;
-    if (!filePath.startsWith('domains/') || !filePath.endsWith('.json')) continue;
-    files.push({ status, filePath });
-  }
-  return files;
-}
-
-function extractName(filePath) {
-  const base = path.basename(filePath);
-  const parts = base.split('.');
-  if (parts.length < 4) return null;
-  return parts[0];
-}
+const RESERVED_NAMES = require('./reserved_names.json');
 
 function listExistingNamesWithRecords() {
   const domainsDir = path.join(process.cwd(), 'domains');
   const names = new Set();
+
   function walk(dir) {
     if (!fs.existsSync(dir)) return;
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -39,8 +19,7 @@ function listExistingNamesWithRecords() {
         const parts = base.split('.');
         if (parts.length >= 4 && parts.slice(-3).join('.') === 'is-app.top.json') {
           try {
-            const raw = fs.readFileSync(p, 'utf8');
-            const json = JSON.parse(raw);
+            const json = JSON.parse(fs.readFileSync(p, 'utf8'));
             const recs = json.records || {};
             const hasAnyRecord =
               recs &&
@@ -54,6 +33,7 @@ function listExistingNamesWithRecords() {
       }
     }
   }
+
   walk(domainsDir);
   return Array.from(names);
 }
@@ -76,28 +56,28 @@ function writeListFile(listPath, map) {
   fs.writeFileSync(listPath, entries.join('\n') + (entries.length ? '\n' : ''), 'utf8');
 }
 
-try {
-  const before = process.env.BEFORE_SHA;
-  const after = process.env.AFTER_SHA;
-  if (!before || !after) {
-    console.log('Missing BEFORE_SHA/AFTER_SHA, skipping lists update.');
-    process.exit(0);
+function stableStringify(map) {
+  const sorted = {};
+  for (const key of Object.keys(map).sort()) {
+    sorted[key] = map[key];
   }
+  return JSON.stringify(sorted);
+}
 
+try {
   const listPath = path.join(process.cwd(), 'lists.txt');
   const oldMap = readListFile(listPath);
 
   // Recompute the map purely from the current repo contents.
-  const existingNames = listExistingNamesWithRecords();
   const newMap = {};
-  for (const name of existingNames) newMap[name] = 'active';
+  for (const name of RESERVED_NAMES) newMap[name] = 'reserved';
+  for (const name of listExistingNamesWithRecords()) newMap[name] = 'active';
 
-  // Compare old and new maps
-  const oldStr = JSON.stringify(oldMap);
-  const newStr = JSON.stringify(newMap);
+  const oldStr = stableStringify(oldMap);
+  const newStr = stableStringify(newMap);
   if (oldStr !== newStr) {
     writeListFile(listPath, newMap);
-    console.log('lists.txt updated to active.');
+    console.log('lists.txt updated.');
   } else {
     console.log('lists.txt not changed.');
   }

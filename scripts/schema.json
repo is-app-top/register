@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://is-app.top/register/domain.schema.json",
+  "title": "is-app.top subdomain registration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subdomain", "domain", "github_username", "description", "records"],
+  "anyOf": [
+    { "required": ["email_or_discord"] },
+    { "required": ["public_email"] }
+  ],
+  "properties": {
+    "subdomain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 63,
+      "pattern": "^(@|_gh-is-app-top-o|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)$"
+    },
+    "domain": {
+      "const": "is-app.top"
+    },
+    "email_or_discord": {
+      "type": "string",
+      "minLength": 1
+    },
+    "public_email": {
+      "type": "string",
+      "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+    },
+    "github_username": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 39,
+      "pattern": "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 15,
+      "maxLength": 500
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 86400
+    },
+    "records": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "A": { "$ref": "#/definitions/recordList" },
+        "AAAA": { "$ref": "#/definitions/recordList" },
+        "CNAME": { "$ref": "#/definitions/recordList" },
+        "NS": { "$ref": "#/definitions/recordList" },
+        "MX": { "$ref": "#/definitions/mxList" },
+        "TXT": { "$ref": "#/definitions/recordList" }
+      }
+    }
+  },
+  "definitions": {
+    "recordList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "mxList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          { "type": "string", "minLength": 1 },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["priority", "target"],
+            "properties": {
+              "priority": { "type": "integer", "minimum": 0, "maximum": 65535 },
+              "target": { "type": "string", "minLength": 1 }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
