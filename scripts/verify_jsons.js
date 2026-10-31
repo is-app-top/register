@@ -237,9 +237,9 @@ function validateRecords(records, subdomain, isReserved) {
         if (!Array.isArray(records.CNAME) || records.CNAME.length !== 1) {
             errors.push(':ERROR: CNAME must contain exactly one target.');
         }
-        const otherTypes = types.filter((type) => type !== 'CNAME');
-        if (otherTypes.length > 0) {
-            errors.push(`:ERROR: CNAME cannot be combined with other records at the same name (found: ${otherTypes.join(', ')}). Remove them; TXT verification is not required.`);
+        const conflictingTypes = types.filter((type) => ['A', 'AAAA', 'NS'].includes(type));
+        if (conflictingTypes.length > 0) {
+            errors.push(`:ERROR: CNAME cannot be combined with A, AAAA, or NS records at the same name (found: ${conflictingTypes.join(', ')}). Remove the conflicting records.`);
         }
     }
 

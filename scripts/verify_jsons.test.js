@@ -38,11 +38,18 @@ test('CNAME without a TXT record passes', () => {
     assert.deepEqual(validateJson(json, domainFile('example')), []);
 });
 
-test('CNAME with a TXT record fails (DNSControl/Gcore cannot serve both)', () => {
+test('CNAME with a TXT record passes', () => {
     const json = base({
         records: { CNAME: ['example.com'], TXT: ['provider-verification=abc123'] },
     });
-    assert.match(validateJson(json, domainFile('example')).join('\n'), /CNAME cannot be combined/);
+    assert.deepEqual(validateJson(json, domainFile('example')), []);
+});
+
+test('CNAME with an MX record passes', () => {
+    const json = base({
+        records: { CNAME: ['example.com'], MX: [{ priority: 10, target: 'mail.example.com' }] },
+    });
+    assert.deepEqual(validateJson(json, domainFile('example')), []);
 });
 
 test('compressed IPv6 AAAA record passes', () => {
@@ -65,8 +72,30 @@ test('multiple CNAME targets fail', () => {
     assert.match(validateJson(json, domainFile('example')).join('\n'), /CNAME must contain exactly one target/);
 });
 
-test('CNAME combined with other records fails', () => {
+test('CNAME combined with an A record fails', () => {
     const json = base({ records: { CNAME: ['a.example.com'], A: ['1.2.3.4'] } });
+    assert.match(validateJson(json, domainFile('example')).join('\n'), /CNAME cannot be combined/);
+});
+
+test('CNAME combined with an AAAA record fails', () => {
+    const json = base({ records: { CNAME: ['a.example.com'], AAAA: ['2001:db8::1'] } });
+    assert.match(validateJson(json, domainFile('example')).join('\n'), /CNAME cannot be combined/);
+});
+
+test('CNAME combined with an NS record fails', () => {
+    const json = base({ records: { CNAME: ['a.example.com'], NS: ['ns1.example.com'] } });
+    assert.match(validateJson(json, domainFile('example')).join('\n'), /CNAME cannot be combined/);
+});
+
+test('reverse combination A then CNAME fails', () => {
+    const json = base({ records: { A: ['1.2.3.4'], CNAME: ['a.example.com'] } });
+    assert.match(validateJson(json, domainFile('example')).join('\n'), /CNAME cannot be combined/);
+});
+
+test('CNAME with TXT and an A record fails', () => {
+    const json = base({
+        records: { CNAME: ['a.example.com'], TXT: ['v=spf1 -all'], A: ['1.2.3.4'] },
+    });
     assert.match(validateJson(json, domainFile('example')).join('\n'), /CNAME cannot be combined/);
 });
 

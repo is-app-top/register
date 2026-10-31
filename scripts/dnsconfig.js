@@ -101,6 +101,7 @@ for (var i = 0; i < subdomains.length; i++) {
   var subdomain = subdomainData.subdomain;
   var recordSet = subdomainData.records || {};
   var ttl = subdomainData.ttl;
+  var hasCNAME = Array.isArray(recordSet.CNAME) && recordSet.CNAME.length > 0;
 
   // A Records
   if (recordSet.A) {
@@ -132,22 +133,30 @@ for (var i = 0; i < subdomains.length; i++) {
 
   // MX Records
   if (recordSet.MX) {
-    for (var mx = 0; mx < recordSet.MX.length; mx++) {
-      var entry = recordSet.MX[mx];
-      addMX(
-        records,
-        subdomain,
-        mxPriority(entry),
-        absoluteName(mxTarget(entry)),
-        ttl
-      );
+    if (hasCNAME) {
+      console.log(":WARNING: Skipping MX records for " + subdomain + " because a CNAME is defined at the same name. DNS cannot serve both.");
+    } else {
+      for (var mx = 0; mx < recordSet.MX.length; mx++) {
+        var entry = recordSet.MX[mx];
+        addMX(
+          records,
+          subdomain,
+          mxPriority(entry),
+          absoluteName(mxTarget(entry)),
+          ttl
+        );
+      }
     }
   }
 
   // TXT Records
   if (recordSet.TXT) {
-    for (var txt = 0; txt < recordSet.TXT.length; txt++) {
-      addTXT(records, subdomain, recordSet.TXT[txt], ttl);
+    if (hasCNAME) {
+      console.log(":WARNING: Skipping TXT records for " + subdomain + " because a CNAME is defined at the same name. DNS cannot serve both.");
+    } else {
+      for (var txt = 0; txt < recordSet.TXT.length; txt++) {
+        addTXT(records, subdomain, recordSet.TXT[txt], ttl);
+      }
     }
   }
 }
