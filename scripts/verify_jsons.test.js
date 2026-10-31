@@ -38,11 +38,11 @@ test('CNAME without a TXT record passes', () => {
     assert.deepEqual(validateJson(json, domainFile('example')), []);
 });
 
-test('CNAME with a TXT verification record passes', () => {
+test('CNAME with a TXT record fails (DNSControl/Gcore cannot serve both)', () => {
     const json = base({
         records: { CNAME: ['example.com'], TXT: ['provider-verification=abc123'] },
     });
-    assert.deepEqual(validateJson(json, domainFile('example')), []);
+    assert.match(validateJson(json, domainFile('example')).join('\n'), /CNAME cannot be combined/);
 });
 
 test('compressed IPv6 AAAA record passes', () => {

@@ -21,8 +21,8 @@ Thanks for helping keep `*.is-app.top` tidy.
 - The filename must match the `subdomain` field.
 - `domain` must be exactly `is-app.top`.
 - `description` must be at least 15 characters.
-- A `CNAME` may not be combined with `A`, `AAAA`, `NS`, or `MX` records, and may not point at `is-app.top` or itself.
-- `TXT` records are optional. A `TXT` record may accompany a `CNAME` when your provider requires verification.
+- A `CNAME` must be the only record for the subdomain and may not point at `is-app.top` or itself.
+- `TXT` records are optional, but cannot share a name with a `CNAME`. No `TXT` verification record is required.
 - `NS` and `MX` targets may not point inside `is-app.top`.
 - Reserved names cannot be registered. See [`scripts/reserved_names.json`](scripts/reserved_names.json).
 - One GitHub account may own at most 10 subdomains.
