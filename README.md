@@ -28,7 +28,8 @@
 
 - We support **A, AAAA, CNAME, NS, MX, and TXT** record types.
 - DNS is provided by **Gcore**. Unlike Cloudflare, Gcore DNS does **not** include proxy/CDN functionality — all records are DNS-only.
-- A `CNAME` must be the only record for that subdomain and may not point at `is-app.top` or at itself. We do **not** require a `TXT` verification record.
+- A `CNAME` may not be combined with `A`, `AAAA`, `NS`, or `MX` records, and may not point at `is-app.top` or at itself.
+- A `TXT` record may be included alongside a `CNAME` when your provider requires it for verification; no `TXT` record is required otherwise.
 - `NS` records may not point inside `is-app.top` (no self-delegation).
 - `MX` targets may not point inside `is-app.top`.
 - `TXT` values are limited to 255 characters per entry.
@@ -81,7 +82,7 @@ CNAME example (no `TXT` verification record required):
 
 > [!NOTE]
 > We do not require a `TXT` record for verification. Add `TXT` only if your service actually needs it.
-> A `CNAME` cannot be combined with any other record type (including `TXT`) at the same name. Only keep the records you need and delete the rest.
+> A `CNAME` cannot be combined with `A`, `AAAA`, `NS`, or `MX` records. Only keep the records you need and delete the rest.
 
 
 ## Fields Explanation

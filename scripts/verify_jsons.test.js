@@ -38,6 +38,13 @@ test('CNAME without a TXT record passes', () => {
     assert.deepEqual(validateJson(json, domainFile('example')), []);
 });
 
+test('CNAME with a TXT verification record passes', () => {
+    const json = base({
+        records: { CNAME: ['example.com'], TXT: ['provider-verification=abc123'] },
+    });
+    assert.deepEqual(validateJson(json, domainFile('example')), []);
+});
+
 test('compressed IPv6 AAAA record passes', () => {
     const json = base({ records: { AAAA: ['2001:db8::1'] } });
     assert.deepEqual(validateJson(json, domainFile('example')), []);
