@@ -1,0 +1,10 @@
+{
+  "subdomain": "vytaminfltd",
+  "domain": "is-app.top",
+  "email_or_discord": "vytaminfltd@gmail.com",
+  "github_username": "vytaminf",
+  "description": "Official website for VytaminF Ltd, a founder-operated proprietary trading and market research company.",
+  "records": {
+    "CNAME": ["vytaminf.github.io"]
+  }
+}
