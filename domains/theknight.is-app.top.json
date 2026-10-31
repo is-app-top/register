@@ -1,0 +1,10 @@
+{
+  "subdomain": "theknight",
+  "domain": "is-app.top",
+  "email_or_discord": "0_1u",
+  "github_username": "samer38d",
+  "description": "The Knight Discord profile and bot website",
+  "records": {
+    "CNAME": ["paid1.daki.cc"]
+  }
+}
