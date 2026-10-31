@@ -49,7 +49,7 @@ Use the following structure for your JSON file.
 > [!IMPORTANT]
 > Ensure your JSON file is valid with NO trailing commas. You can easily check the format validity [here](https://jsonlint.com).
 
-A record example (`TXT` is optional):
+
 ```json
 {
   "subdomain": "yoursubdomain",
@@ -62,21 +62,6 @@ A record example (`TXT` is optional):
   "records": {
     "A":   ["1.0.0.1", "1.0.0.2"],
     "TXT": ["v=spf1 include:_spf.example.com ~all"]
-  }
-}
-```
-
-CNAME example (no `TXT` verification record required):
-```json
-{
-  "subdomain": "yoursubdomain",
-  "domain": "is-app.top",
-  "email_or_discord": "user@example.com or user",
-  "github_username": "user",
-  "description": "A brief description of the purpose of the subdomain",
-
-  "records": {
-    "CNAME": ["example.com"]
   }
 }
 ```
