@@ -5,8 +5,13 @@
   "version": "0.0.0",
   "description": "Registration repo tooling",
   "license": "MIT",
+  "scripts": {
+    "validate": "node scripts/verify_jsons.js",
+    "test": "node --test",
+    "lint": "node scripts/lint.js",
+    "check": "npm run lint && npm run validate && npm test"
+  },
   "dependencies": {
-    "json5": "^2.2.3"
+    "ajv": "^8.17.1"
   }
 }
-

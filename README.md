@@ -21,13 +21,18 @@
 7. ✅ After manual review and approval, your subdomain will be live within minutes.
 
 > [!NOTE]
-> Passing automated checks does NOT guarantee approval. All submissions undergo manual review to ensure quality and compliance. Read our [Terms of Service](TERMS.md).
+> Passing automated checks does NOT guarantee approval. All pull requests are manually reviewed to ensure quality and compliance. Read our [Terms of Service](TERMS.md).
 
 
 ## Supported Record Types
 
 - We support **A, AAAA, CNAME, NS, MX, and TXT** record types.
 - DNS is provided by **Gcore**. Unlike Cloudflare, Gcore DNS does **not** include proxy/CDN functionality — all records are DNS-only.
+- A `CNAME` must be the only record for that subdomain and may not point at `is-app.top` or at itself.
+- `NS` records may not point inside `is-app.top` (no self-delegation).
+- `MX` targets may not point inside `is-app.top`.
+- `TXT` values are limited to 255 characters per entry.
+- Reserved names (for example `www`, `mail`, `admin`, `api`) cannot be registered. See [Reserved names](#reserved-names).
 
 
 ## JSON Formatting
@@ -50,17 +55,20 @@ Template:
   "email_or_discord": "user@example.com or user",
   "github_username": "user",
   "description": "A brief description of the purpose of the subdomain",
+  "ttl": 3600,
 
   "records": {
     "A":     ["1.0.0.1", "1.0.0.2"],
     "AAAA":  ["2000:db8::1", "2000:db8::2"],
     "CNAME": ["example.com"],
     "NS":    ["ns1.example.com", "ns2.example.com"],
-    "MX":    ["mail1.example.com","mail2.example.com"],
+    "MX":    ["mail1.example.com", { "priority": 10, "target": "mail2.example.com" }],
     "TXT":   ["v=spf1 include:_spf.example.com ~all"]
   }
 }
 ```
+
+The `CNAME` example above cannot be combined with any other record type. Only keep the records you need and delete the rest.
 
 
 ## Fields Explanation
@@ -68,9 +76,31 @@ Template:
 - `subdomain`: Your desired subdomain (e.g., "myproject" for myproject.is-app.top)
 - `domain`: Always "is-app.top"
 - `email_or_discord`: Your email or Discord username to protect your email from web scraping
-- `github_username`: Your GitHub username
-- `description`: A brief description of your subdomain's purpose
+- `public_email`: Optional public email address (use instead of `email_or_discord` for system/reserved entries)
+- `github_username`: Your GitHub username. Only this account can change the subdomain's records.
+- `description`: A brief description of your subdomain's purpose (minimum 15 characters)
+- `ttl`: Optional TTL in seconds for all records (60–86400). Defaults to the Gcore default when omitted.
 - `records`: DNS records for your subdomain. Only keep the ones you need. [Learn more](https://gcore.com/docs/dns/dns-records/).
+  - `MX` entries may be a hostname (priority `20`) or an object: `{ "priority": 10, "target": "mail.example.com" }`.
+
+
+## Reserved names
+
+A list of system and commonly abused names is reserved and cannot be registered. The current list lives in [`scripts/reserved_names.json`](scripts/reserved_names.json) and is mirrored in [`lists.txt`](lists.txt). Reserved entries in `lists.txt` show `"reserved"`; live subdomains show `"active"`.
+
+If you need a reserved name for a legitimate project, open an issue first.
+
+
+## Local checks
+
+Run the same checks used by CI before opening a pull request:
+
+```bash
+npm install
+npm run check   # lint + validate + tests
+```
+
+You can also run the validator on its own with `npm run validate`.
 
 
 ## Terms and Conditions
@@ -91,7 +121,6 @@ If you need help or have questions, please open an issue in this repository or s
 ## Featured
 
 If you're interested in registering subdomains similar to `*.is-app.top`, consider exploring these services:
-- [Open Domains](https://open-domains.net)
 - [is-a.dev](https://www.is-a.dev)
 - [thedev.id](https://thedev.id)
 - [js.org](https://js.org)
