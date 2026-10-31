@@ -1,0 +1,11 @@
+{
+    "subdomain": "remote",
+    "domain": "is-app.top",
+    "email_or_discord": "solomonsasson031@gmail.com",
+    "github_username": "theprojectmaker",
+    "description": "Remote Control - personal remote desktop control web app",
+
+    "records": {
+          "CNAME": ["remote-gateway.pages.dev"]
+    }
+}
