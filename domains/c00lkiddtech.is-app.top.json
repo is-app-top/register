@@ -1,0 +1,24 @@
+{
+  "subdomain": "c00lkiddtech",
+  "domain": "is-app.top",
+  "email_or_discord": "c00lkiddweb@gmail.com",
+  "github_username": "c00lkiddtech",
+  "description": "Personal site with browser games and web tools (link checker). Website: https://c00lkiddtech.live",
+  "ttl": 3600,
+  "records": {
+    "A": [
+      "15.204.116.29"
+    ]
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
