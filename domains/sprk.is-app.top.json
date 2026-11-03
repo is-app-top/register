@@ -1,0 +1,12 @@
+{
+  "subdomain": "sprk",
+  "domain": "is-app.top",
+  "email_or_discord": "bestspark@bestspark.org",
+  "github_username": "BestSpark687090",
+  "description": "games site",
+  "ttl": 3600,
+
+  "records": {
+    "A":   ["15.204.67.205"],
+  }
+}
