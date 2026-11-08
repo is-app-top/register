@@ -1,0 +1,11 @@
+{
+  "subdomain": "tb",
+  "domain": "is-app.top",
+  "email_or_discord": "princetarikislam@gmail.com",
+  "github_username": "tarikk786786",
+  "description": "TB TroveBooks - Independent Open Digital Bookstore and Reader Platform",
+  "ttl": 3600,
+  "records": {
+    "CNAME": "tarikk786786.github.io"
+  }
+}
