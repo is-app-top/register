@@ -1,0 +1,12 @@
+{
+  "subdomain": "susnetwork",
+  "domain": "is-app.top",
+  "email_or_discord": "internet_zzb10x@ik.me",
+  "github_username": "Nb1X",
+  "description": "SusNetwork project's domain",
+  "ttl": 3600,
+
+  "records": {
+    "A":   ["176.159.208.97"]
+  }
+}
